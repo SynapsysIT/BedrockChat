@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy DocuBot</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-200 flex items-center justify-center h-screen">
+    <div class="bg-white p-10 rounded shadow-md w-2/3 max-h-screen overflow-y-auto"> <!-- Added max-h-screen and overflow-y-auto -->
+        <h1 class="text-2xl mb-6 text-center font-bold">Easy DocuBot</h1>
+        <form id="askForm" class="space-y-4">
+            <div>
+                <label for="user_name" class="block text-sm font-medium text-gray-700">Nom</label>
+                <input type="text" id="user_name" name="user_name" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            <div>
+                <label for="profession" class="block text-sm font-medium text-gray-700">Profession</label>
+                <input type="text" id="profession" name="profession" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            <div>
+                <label for="city" class="block text-sm font-medium text-gray-700">Localisation</label>
+                <input type="text" id="city" name="city" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            <div>
+                <label for="salary_range" class="block text-sm font-medium text-gray-700">Salaire Annuel Brut</label>
+                <input type="text" id="salary_range" name="salary_range" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            <div>
+                <label for="number_of_people_in_house" class="block text-sm font-medium text-gray-700">Nombre de personnes dans la maison</label>
+                <input type="number" id="number_of_people_in_house" name="number_of_people_in_house" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            <div>
+                <label for="query" class="block text-sm font-medium text-gray-700">Que voulez-vous savoir ?</label>
+                <input type="text" id="query" name="query" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            
+            <div>
+                <input type="submit" value="Submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            </div>
+        </form>
+        <!-- <div id="loading" class="mt-4 p-4 bg-gray-100 rounded-md shadow-sm text-center hidden">Loading...</div> -->
+        <div id="response" class="mt-4 p-4 bg-gray-100 rounded-md shadow-sm"></div>
+    </div>
+
+    <script>
+        document.getElementById('askForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const query = document.getElementById('query').value;
+            const user_name = document.getElementById('user_name').value;
+            const profession = document.getElementById('profession').value;
+            const city = document.getElementById('city').value;
+            const salary_range = document.getElementById('salary_range').value;
+            const number_of_people_in_house = document.getElementById('number_of_people_in_house').value;
+            const responseDiv = document.getElementById('response');
+
+            
+            responseDiv.innerHTML = '';
+
+            const response = await fetch('/ask_document', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'query': query,
+                    'user_name': user_name,
+                    'profession': profession,
+                    'city': city,
+                    'salary_range': salary_range,
+                    'number_of_people_in_house': number_of_people_in_house
+                })
+            });
+
+            const data = await response.json();  // Parse the JSON response
+            const formattedResponse = formatResponse(data.response);
+            responseDiv.innerHTML = formattedResponse;
+        });
+
+        function formatResponse(response) {
+            const lines = response.split('\n');
+            let formatted = '';
+            let inList = false;
+
+            lines.forEach(line => {
+                if (line.startsWith('*')) {
+                    if (!inList) {
+                        formatted += '<ul>';
+                        inList = true;
+                    }
+                    formatted += `<li>${line.substring(1).trim()}</li>`;
+                } else {
+                    if (inList) {
+                        formatted += '</ul>';
+                        inList = false;
+                    }
+                    formatted += `<p>${line}</p>`;
+                }
+            });
+
+            if (inList) {
+                formatted += '</ul>';
+            }
+
+            return formatted;
+        }
+    </script>
+
+</body>
+</html>
