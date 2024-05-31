@@ -15,9 +15,13 @@
                 <label for="user_name" class="block text-sm font-medium text-gray-700">Nom</label>
                 <input type="text" id="user_name" name="user_name" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
             </div>
-            <div>
+            <!-- <div>
                 <label for="profession" class="block text-sm font-medium text-gray-700">Profession</label>
                 <input type="text" id="profession" name="profession" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div> -->
+            <div>
+                <label for="construction_year" class="block text-sm font-medium text-gray-700">Année de construction</label>
+                <input type="number" id="construction_year" name="construction_year" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
             </div>
             <div>
                 <label for="city" class="block text-sm font-medium text-gray-700">Localisation</label>
@@ -27,17 +31,46 @@
                 <label for="salary_range" class="block text-sm font-medium text-gray-700">Salaire Annuel Brut</label>
                 <input type="text" id="salary_range" name="salary_range" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
             </div>
+            
             <div>
                 <label for="number_of_people_in_house" class="block text-sm font-medium text-gray-700">Nombre de personnes dans la maison</label>
                 <input type="number" id="number_of_people_in_house" name="number_of_people_in_house" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
             </div>
+
             <div>
-                <label for="query" class="block text-sm font-medium text-gray-700">Que voulez-vous savoir ?</label>
+                <label for="work_type" class="block text-sm font-medium text-gray-700">Type de travaux envisagés</label>
+                <div class="mt-1 space-y-2">
+                    <div>
+                        <input type="checkbox" id="isolation" name="work_type" value="isolation">
+                        <label for="isolation" class="text-sm text-gray-700">Isolation</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="fenetre" name="work_type" value="fenetre">
+                        <label for="fenetre" class="text-sm text-gray-700">Fenêtre</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="chauffage" name="work_type" value="chauffage">
+                        <label for="chauffage" class="text-sm text-gray-700">Chauffage</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="toiture" name="work_type" value="toiture">
+                        <label for="toiture" class="text-sm text-gray-700">Toiture</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="eau_chaude" name="work_type" value="eau_chaude">
+                        <label for="eau_chaude" class="text-sm text-gray-700">Production d'eau chaude</label>
+                    </div>
+                </div>
+            </div>
+
+
+            <div>
+                <label for="query" class="block text-sm font-medium text-gray-700">D'autres questions ?</label>
                 <input type="text" id="query" name="query" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
             </div>
             
             <div>
-                <input type="submit" value="Submit" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <input type="submit" value="Découvrir" class="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
             </div>
         </form>
         <!-- <div id="loading" class="mt-4 p-4 bg-gray-100 rounded-md shadow-sm text-center hidden">Loading...</div> -->
@@ -49,11 +82,13 @@
             event.preventDefault();
             const query = document.getElementById('query').value;
             const user_name = document.getElementById('user_name').value;
-            const profession = document.getElementById('profession').value;
+            const construction_year = document.getElementById('construction_year').value;
             const city = document.getElementById('city').value;
             const salary_range = document.getElementById('salary_range').value;
             const number_of_people_in_house = document.getElementById('number_of_people_in_house').value;
             const responseDiv = document.getElementById('response');
+            const work_types = Array.from(document.querySelectorAll('input[name="work_type"]:checked')).map(cb => cb.value).join(', ');
+
 
             
             responseDiv.innerHTML = '';
@@ -66,10 +101,11 @@
                 body: new URLSearchParams({
                     'query': query,
                     'user_name': user_name,
-                    'profession': profession,
+                    'construction_year': construction_year,
                     'city': city,
                     'salary_range': salary_range,
-                    'number_of_people_in_house': number_of_people_in_house
+                    'number_of_people_in_house': number_of_people_in_house,
+                    'work_types': work_types
                 })
             });
 

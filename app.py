@@ -8,9 +8,7 @@ from dotenv import load_dotenv
 import os
 
 
-def ask_document(
-    query, user_name, profession, city, salary_range, numer_of_people_on_house
-):
+def ask_document(**kwargs):
     load_dotenv()
     knowledge_base_id = os.getenv("KNOWLEDGE_BASE_ID")
     credentials_profile_name = os.getenv("CREDENTIALS_PROFILE_NAME")
@@ -39,11 +37,11 @@ def ask_document(
         "Vous ne devez pas répéter les informations de l'utilisateur. Au maximum, dites bonjour + nom"
         "Essayez d'être pragmatique et cherchez l'aide spécifique que l'utilisateur peut recevoir dans sa situation (nombre de personnes, salaire, lieu)."
         "Info sur l'utilisateur: "
-        f"Nom: {user_name}"
-        f"Profession: {profession}"
-        f"Ville: {city}"
-        f"Plage de salaire: {salary_range}"
-        f"Nombre de personnes dans la maison: {numer_of_people_on_house}"
+        f"Nom: {kwargs['user_name']}"
+        f"Ville: {kwargs['city']}"
+        f"Plage de salaire: {kwargs['salary_range']}"
+        f"Nombre de personnes dans la maison: {kwargs['numer_of_people_on_house']}"
+        f"Type de travaux envisagés: {kwargs['work_types']}"
         "Context: {context}"
     )
 
@@ -56,7 +54,7 @@ def ask_document(
 
     question_answer_chain = create_stuff_documents_chain(llm, prompt)
     chain = create_retrieval_chain(retriever, question_answer_chain)
-    query = f"{query} ville:{city} salaire:{salary_range} nombre_personnes:{numer_of_people_on_house}"
+    query = f"{kwargs['query']} ville:{kwargs['city']} salaire:{kwargs['salary_range']} nombre_personnes:{kwargs['numer_of_people_on_house']} type_travaux:{kwargs['work_types']}"
     response = chain.invoke({"input": query})
 
     return response["answer"]
@@ -76,18 +74,27 @@ def ask_document_route():
     print("Started ask_document_route")
     query = request.form["query"].strip('"')
     user_name = request.form["user_name"].strip('"')
-    profession = request.form["profession"].strip('"')
     city = request.form["city"].strip('"')
     salary_range = request.form["salary_range"].strip('"')
     numer_of_people_on_house = request.form["number_of_people_in_house"].strip('"')
+    work_types = request.form["work_types"].strip('"')
 
-    response = ask_document(
-        query, user_name, profession, city, salary_range, numer_of_people_on_house
-    )
+
+    args_dict = {
+        "query": query,
+        "user_name": user_name,
+        "city": city,
+        "salary_range": salary_range,
+        "numer_of_people_on_house": numer_of_people_on_house,
+        "work_types": work_types,
+    }
+
+    response = ask_document(**args_dict)
+
+    print(response)
 
     response = {"response": response}
 
-    print(response)
     return jsonify(response)
 
 
