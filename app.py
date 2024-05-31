@@ -8,7 +8,65 @@ from dotenv import load_dotenv
 import os
 
 
+def get_income_category(num_people, income, location):
+    # Define the base thresholds for each category for both regions
+    income=int(income)
+    num_people=int(num_people)
+    thresholds_hors_idf = {
+        1: {'tres_modestes': 17009, 'modestes': 21805, 'intermediaires': 30549},
+        2: {'tres_modestes': 24875, 'modestes': 31889, 'intermediaires': 44907},
+        3: {'tres_modestes': 29917, 'modestes': 38349, 'intermediaires': 54071},
+        4: {'tres_modestes': 34948, 'modestes': 44802, 'intermediaires': 63235},
+        5: {'tres_modestes': 40002, 'modestes': 51281, 'intermediaires': 72400},
+    }
+    
+    thresholds_idf = {
+        1: {'tres_modestes': 23541, 'modestes': 28657, 'intermediaires': 40018},
+        2: {'tres_modestes': 34551, 'modestes': 42058, 'intermediaires': 58827},
+        3: {'tres_modestes': 41493, 'modestes': 50513, 'intermediaires': 70382},
+        4: {'tres_modestes': 48447, 'modestes': 58981, 'intermediaires': 82839},
+        5: {'tres_modestes': 55427, 'modestes': 67457, 'intermediaires': 94844},
+    }
+    
+    # Additional amount per supplementary person
+    additional_amounts_hors_idf = {'tres_modestes': 5045, 'modestes': 6462, 'intermediaires': 9165}
+    additional_amounts_idf = {'tres_modestes': 6970, 'modestes': 8486, 'intermediaires': 12006}
+    
+    # Select the appropriate thresholds based on location
+    if location == 'ile_de_france':
+        thresholds = thresholds_idf
+        additional_amounts = additional_amounts_idf
+    else:
+        thresholds = thresholds_hors_idf
+        additional_amounts = additional_amounts_hors_idf
+    
+    # Calculate thresholds for households with more than 5 people
+    if num_people > 5:
+        base_thresholds = thresholds[5]
+        extra_people = num_people - 5
+        for category in base_thresholds:
+            base_thresholds[category] += extra_people * additional_amounts[category]
+        thresholds[num_people] = base_thresholds
+    
+    # Get the thresholds for the given number of people
+    current_thresholds = thresholds.get(num_people, thresholds[5])
+    
+    # Determine the income category
+    if income <= current_thresholds['tres_modestes']:
+        return 'Menages aux revenus tres modestes'
+    elif income <= current_thresholds['modestes']:
+        return 'Menages aux revenus modestes'
+    elif income <= current_thresholds['intermediaires']:
+        return 'Menages aux revenus intermediaires'
+    else:
+        return 'Menages aux revenus superieurs'
+
+    
+
 def ask_document(**kwargs):
+
+    revenue_class = get_income_category(kwargs['numer_of_people_on_house'], kwargs['salary_range'], kwargs['city'])
+
     load_dotenv()
     knowledge_base_id = os.getenv("KNOWLEDGE_BASE_ID")
     credentials_profile_name = os.getenv("CREDENTIALS_PROFILE_NAME")
@@ -21,9 +79,8 @@ def ask_document(**kwargs):
     )
 
     model_kwargs_claude = {
-        "temperature": 0.7,
+        "temperature": 0.2,
         "top_p": 0.9,
-        "max_gen_len": 600,
     }
 
     llm = ChatBedrock(
@@ -35,12 +92,14 @@ def ask_document(**kwargs):
     system_prompt = (
         "Vous êtes un assistant qui aide les utilisateurs à trouver des aides publiques pour leur logement. Vous recevrez une série de documents comme contexte et devrez répondre à la question de l'utilisateur sur la base de ses données, qui seront également fournies. Idéalement, vous devriez être en mesure de trouver une aide que l'utilisateur peut recevoir, mais si vous avez un doute, n'inventez rien, dites que vous n'êtes pas sur. "
         "Vous ne devez pas répéter les informations de l'utilisateur. Au maximum, dites bonjour + nom"
-        "Essayez d'être pragmatique et cherchez l'aide spécifique que l'utilisateur peut recevoir dans sa situation (nombre de personnes, salaire, lieu)."
+        f"Essayez d'être pragmatique et cherchez l'aide spécifique que l'utilisateur à demander ({kwargs['query']}) et que il puisse recevoir dans sa situation de plafond de revenu {revenue_class}"
+        "Ce sont les types de plafonds de revenu :"
+        "Menages aux revenus tres modestes, Menages aux revenus modestes, Menages aux revenus intermediaires, Menages aux revenus superieurs"
+        "Soyez aussi succinct que possible. Et pour chaque type de travail demandé par l'utilisateur, fournissez-le sur une nouvelle ligne avec des puces (*), par exemple :"
+        "Isolation: ..."
         "Info sur l'utilisateur: "
         f"Nom: {kwargs['user_name']}"
-        f"Ville: {kwargs['city']}"
-        f"Plage de salaire: {kwargs['salary_range']}"
-        f"Nombre de personnes dans la maison: {kwargs['numer_of_people_on_house']}"
+        f"Plafond revenu: {revenue_class}"
         f"Type de travaux envisagés: {kwargs['work_types']}"
         "Context: {context}"
     )
@@ -54,7 +113,7 @@ def ask_document(**kwargs):
 
     question_answer_chain = create_stuff_documents_chain(llm, prompt)
     chain = create_retrieval_chain(retriever, question_answer_chain)
-    query = f"{kwargs['query']} ville:{kwargs['city']} salaire:{kwargs['salary_range']} nombre_personnes:{kwargs['numer_of_people_on_house']} type_travaux:{kwargs['work_types']}"
+    query = f"{kwargs['query']} type_travaux:{kwargs['work_types']} Plafond revenu:{revenue_class}"
     response = chain.invoke({"input": query})
 
     return response["answer"]
@@ -71,7 +130,6 @@ def index():
 
 @app.route("/ask_document", methods=["POST"])
 def ask_document_route():
-    print("Started ask_document_route")
     query = request.form["query"].strip('"')
     user_name = request.form["user_name"].strip('"')
     city = request.form["city"].strip('"')
@@ -90,8 +148,6 @@ def ask_document_route():
     }
 
     response = ask_document(**args_dict)
-
-    print(response)
 
     response = {"response": response}
 

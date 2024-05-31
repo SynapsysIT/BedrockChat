@@ -11,25 +11,33 @@
     <div class="bg-white p-10 rounded shadow-md w-2/3 max-h-screen overflow-y-auto"> <!-- Added max-h-screen and overflow-y-auto -->
         <h1 class="text-2xl mb-6 text-center font-bold">Easy DocuBot</h1>
         <form id="askForm" class="space-y-4">
+
             <div>
                 <label for="user_name" class="block text-sm font-medium text-gray-700">Nom</label>
                 <input type="text" id="user_name" name="user_name" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
             </div>
-            <!-- <div>
-                <label for="profession" class="block text-sm font-medium text-gray-700">Profession</label>
-                <input type="text" id="profession" name="profession" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-            </div> -->
+
             <div>
                 <label for="construction_year" class="block text-sm font-medium text-gray-700">Année de construction</label>
                 <input type="number" id="construction_year" name="construction_year" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
             </div>
+
             <div>
+
                 <label for="city" class="block text-sm font-medium text-gray-700">Localisation</label>
-                <input type="text" id="city" name="city" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+
+                <select id="city" name="city" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+
+                    <option value="ile_de_france">Ile de France</option>
+
+                    <option value="hors_ile_de_france">Hors Ile de France</option>
+
+                </select>
+
             </div>
             <div>
                 <label for="salary_range" class="block text-sm font-medium text-gray-700">Salaire Annuel Brut</label>
-                <input type="text" id="salary_range" name="salary_range" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <input type="number" id="salary_range" name="salary_range" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
             </div>
             
             <div>
@@ -52,10 +60,10 @@
                         <input type="checkbox" id="chauffage" name="work_type" value="chauffage">
                         <label for="chauffage" class="text-sm text-gray-700">Chauffage</label>
                     </div>
-                    <div>
+                    <!-- <div>
                         <input type="checkbox" id="toiture" name="work_type" value="toiture">
                         <label for="toiture" class="text-sm text-gray-700">Toiture</label>
-                    </div>
+                    </div> -->
                     <div>
                         <input type="checkbox" id="eau_chaude" name="work_type" value="eau_chaude">
                         <label for="eau_chaude" class="text-sm text-gray-700">Production d'eau chaude</label>
